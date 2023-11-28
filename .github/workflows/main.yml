@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: CI/CD
 
 on:
   push:
@@ -6,27 +6,27 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v2
-        with:
-          distribution: 'adopt'
-          java-version: '11'
+    - name: Set up Java
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '11'
 
-      - name: Build with Maven
-        run: mvn clean install
+    - name: Build with Maven
+      run: mvn clean package
 
-      - name: Build and Push Docker Image
-        run: |
-          echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          docker build -t $DOCKERHUB_USERNAME/maven-java-monitoring-example .
-          docker push $DOCKERHUB_USERNAME/maven-java-monitoring-example
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+    - name: Build Docker image
+      run: docker build -t raffay6671/maven-java-monitoring-example .
+
+    - name: Log in to Docker Hub
+      run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker image
+      run: docker push raffay6671/maven-java-monitoring-example
